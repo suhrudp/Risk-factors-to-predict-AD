@@ -46,9 +46,17 @@ input_data = [
 if st.button("Predict"):
     input_array = np.array(input_data).reshape(1, -1)  # Ensure correct shape (1 row, N features)
     
+    # Debugging: Display the input array
+    st.write(f"Input data shape: {input_array.shape}")
+    st.write(f"Input data: {input_array}")
+
     # Prediction using the loaded model
-    prediction = model.predict(input_array)
+    try:
+        prediction = model.predict(input_array)
+        
+        # Display the result based on the prediction
+        result = "Risk of developing Alzheimer's" if prediction[0] == 1 else "No significant risk detected"
+        st.success(f"Prediction: {result}")
     
-    # Display the result based on the prediction
-    result = "Risk of developing Alzheimer's" if prediction[0] == 1 else "No significant risk detected"
-    st.success(f"Prediction: {result}")
+    except Exception as e:
+        st.error(f"Error in prediction: {str(e)}")
