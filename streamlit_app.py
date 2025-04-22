@@ -3,7 +3,7 @@ import numpy as np
 import pickle
 
 # Load your pre-trained model
-model = pickle.load(open("lightgbm_model_22-04-2025.pkl", "rb"))  # Replace with your actual model filename
+model = pickle.load(open("model.pkl", "rb"))  # Replace with your actual model filename
 
 # Streamlit app
 st.title("Alzheimer's Risk Prediction")
