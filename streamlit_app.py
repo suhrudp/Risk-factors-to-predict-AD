@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import joblib
 import shap
-import matplotlib.pyplot as plt
 
 # 1. Function to manually input data for each feature
 def get_input():
@@ -86,8 +85,7 @@ if st.button("Predict"):
     # Calculate SHAP values for the user input
     shap_values = explainer.shap_values(user_data)
 
-    # Visualize SHAP values using Matplotlib (non-JS based)
+    # Visualize SHAP values
     st.subheader("SHAP Summary Plot")
-    shap.summary_plot(shap_values, user_data, plot_type="bar")
-    plt.show()
-    st.pyplot(plt)  # Display the plot in Streamlit
+    shap.initjs()  # This initializes the SHAP visualization tools
+    shap.summary_plot(shap_values, user_data)
