@@ -77,7 +77,7 @@ if st.button("Predict"):
             "Vitamin B12 Deficiency"
         ])
         
-        # Compute the mean absolute SHAP values for each feature
+        # Calculate mean absolute SHAP values for each feature and add it to the dataframe
         shap_df["Mean Absolute SHAP"] = shap_df.abs().mean(axis=0)
 
         # Display SHAP values numerically in a table with mean absolute SHAP values
