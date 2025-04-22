@@ -63,6 +63,11 @@ if st.button("Predict"):
         explainer = shap.TreeExplainer(model)  # Create SHAP explainer
         shap_values = explainer.shap_values(input_array)  # Calculate SHAP values
         
+        # Check the structure of shap_values
+        st.write("SHAP Values Structure")
+        st.write(f"shap_values[0] (Class 0): {shap_values[0]}")
+        st.write(f"shap_values[1] (Class 1): {shap_values[1]}")
+
         # Extract SHAP values for class 1 (Alzheimer's risk)
         shap_df = pd.DataFrame(shap_values[1], columns=[
             "Spinal Arthritis", "History of Stroke", "Age", "Other Parkinson's Disease Symptoms", "Height", 
@@ -72,7 +77,8 @@ if st.button("Predict"):
             "Vitamin B12 Deficiency"
         ])
         
-        st.subheader("Numerical SHAP Values")
+        # Display SHAP values numerically in a table
+        st.subheader("Numerical SHAP Values for Class 1 (Alzheimer's Risk)")
         st.write(shap_df)  # Display SHAP values as a table
         
     except Exception as e:
