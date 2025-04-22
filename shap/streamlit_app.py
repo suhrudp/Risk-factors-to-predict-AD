@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import pickle
 import shap
+import pandas as pd
 
 # Load your pre-trained model
 model_path = 'model.pkl'  # Replace with the actual model file path
@@ -62,17 +63,16 @@ if st.button("Predict"):
         explainer = shap.TreeExplainer(model)  # Create SHAP explainer
         shap_values = explainer.shap_values(input_array)  # Calculate SHAP values
         
-        # Display numerical SHAP values
-        st.subheader("Numerical SHAP Values")
-        feature_names = [
+        # Extract SHAP values for class 1 (Alzheimer's risk)
+        shap_df = pd.DataFrame(shap_values[1], columns=[
             "Spinal Arthritis", "History of Stroke", "Age", "Other Parkinson's Disease Symptoms", "Height", 
             "Sleep Apnea Diagnosis", "Heart Rate", "Seizure Episodes", "Psychiatric Disorders", "Cigarettes Smoked Per Day", 
             "Arthritis Diagnosis", "Depression in Last 2 Years", "Diastolic Blood Pressure", "REM Sleep Behavior Disorder", 
             "Other Cardiovascular Conditions", "Diabetes Diagnosis", "Body Mass Index", "Insomnia/Hyposomnia", 
             "Vitamin B12 Deficiency"
-        ]
+        ])
         
-        shap_df = pd.DataFrame(shap_values[1], columns=feature_names)  # Extract SHAP values for class 1
+        st.subheader("Numerical SHAP Values")
         st.write(shap_df)  # Display SHAP values as a table
         
     except Exception as e:
