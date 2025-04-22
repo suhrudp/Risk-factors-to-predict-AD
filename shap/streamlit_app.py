@@ -4,7 +4,7 @@ import pandas as pd
 import torch
 from torch import nn
 
-# Assuming you have an LSTM model like the one in the working code
+# Example LSTM model definition
 class LSTMClassifier(nn.Module):
     def __init__(self, input_dim, hidden_dim, num_patients, output_dim=2, num_layers=1):
         super(LSTMClassifier, self).__init__()
@@ -78,6 +78,11 @@ def model_predict(data):
 explainer = shap.Explainer(model_predict, synthetic_data_df)
 shap_values = explainer(synthetic_data_df)
 
-# Display the SHAP values
-shap.initjs()
-shap.summary_plot(shap_values, synthetic_data_df)
+# Extract SHAP values as numerical data
+shap_df = pd.DataFrame(shap_values.values, columns=features)
+
+# Calculate the mean absolute SHAP value for each feature
+shap_df["Mean Absolute SHAP"] = shap_df.abs().mean(axis=0)
+
+# Display the SHAP values as a numerical table
+import ace_tools as tools; tools.display_dataframe_to_user(name="SHAP Values", dataframe=shap_df)
