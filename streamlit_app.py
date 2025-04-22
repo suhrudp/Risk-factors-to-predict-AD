@@ -5,7 +5,7 @@ import shap
 import matplotlib.pyplot as plt
 
 # Load your pre-trained model
-model_path = 'lightgbm_model_22-04-2025.pkl'  # Replace with the actual model file path
+model_path = 'model.pkl'  # Replace with the actual model file path
 with open(model_path, 'rb') as file:
     model = pickle.load(file)
 
