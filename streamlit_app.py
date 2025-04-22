@@ -1,77 +1,78 @@
 import streamlit as st
 import numpy as np
-import pickle
+import pandas as pd
+import joblib
 import shap
-import matplotlib.pyplot as plt
 
-# Load your pre-trained model
-model_path = 'model.pkl'  # Replace with the actual model file path
-with open(model_path, 'rb') as file:
-    model = pickle.load(file)
+# 1. Function to manually input data for each feature
+def get_input():
+    st.title('Enter Patient Data')
 
-# Streamlit app UI
-st.title("Alzheimer's Risk Prediction")
-st.write("Enter medical and lifestyle details to estimate the risk of Alzheimer's.")
+    spinal_arthritis = st.selectbox("Spinal Arthritis (0 or 1):", [0, 1])
+    history_of_stroke = st.selectbox("History of Stroke (0 or 1):", [0, 1])
+    age = st.slider("Age (40-80):", 40, 80, 60)
+    other_parkinsons_symptoms = st.selectbox("Other Parkinson's Disease Symptoms (0 or 1):", [0, 1])
+    height = st.slider("Height (150-190 cm):", 150, 190, 170)
+    sleep_apnea_diagnosis = st.selectbox("Sleep Apnea Diagnosis (0 or 1):", [0, 1])
+    heart_rate = st.slider("Heart Rate (60-100):", 60, 100, 75)
+    seizure_episodes = st.selectbox("Seizure Episodes (0 or 1):", [0, 1])
+    psychiatric_disorders = st.selectbox("Psychiatric Disorders (0 or 1):", [0, 1])
+    cigarettes_smoked = st.slider("Cigarettes Smoked Per Day (0-30):", 0, 30, 10)
+    arthritis_diagnosis = st.selectbox("Arthritis Diagnosis (0 or 1):", [0, 1])
+    depression_last_2_years = st.selectbox("Depression in Last 2 Years (0 or 1):", [0, 1])
+    diastolic_blood_pressure = st.slider("Diastolic Blood Pressure (70-90):", 70, 90, 80)
+    rem_sleep_behavior_disorder = st.selectbox("REM Sleep Behavior Disorder (0 or 1):", [0, 1])
+    cardiovascular_conditions = st.selectbox("Other Cardiovascular Conditions (0 or 1):", [0, 1])
+    diabetes_diagnosis = st.selectbox("Diabetes Diagnosis (0 or 1):", [0, 1])
+    bmi = st.slider("Body Mass Index (18.5-35):", 18.5, 35.0, 25.0)
+    insomnia_hyposomnia = st.selectbox("Insomnia/Hyposomnia (0 or 1):", [0, 1])
+    vitamin_b12_deficiency = st.selectbox("Vitamin B12 Deficiency (0 or 1):", [0, 1])
 
-# Feature Inputs (matching new features provided in the HTML form)
-ARTSPIN = st.number_input("Spinal Arthritis (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-CBSTROKE = st.number_input("History of Stroke (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-NACCAGE = st.number_input("Age (in years)", min_value=0, value=0)
-PDOTHR = st.number_input("Other Parkinson's Disease Symptoms (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-HEIGHT = st.number_input("Height (cm)", min_value=0.0, value=0.0, step=0.1)
-SLEEPAP = st.number_input("Sleep Apnea Diagnosis (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-HRATE = st.number_input("Heart Rate (BPM)", value=0.00, format="%.2f")
-SEIZURES = st.number_input("Seizure Episodes (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-PSYCDIS = st.number_input("Psychiatric Disorders (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-PACKSPER = st.number_input("Cigarettes Smoked Per Day", min_value=0, value=0)
-ARTH = st.number_input("Arthritis Diagnosis (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-DEP2YRS = st.number_input("Depression in Last 2 Years (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-BPDIAS = st.number_input("Diastolic Blood Pressure (mmHg)", min_value=0, value=0)
-REMDIS = st.number_input("REM Sleep Behavior Disorder (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-CVOTHR = st.number_input("Other Cardiovascular Conditions (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-DIABETES = st.number_input("Diabetes Diagnosis (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-NACCBMI = st.number_input("Body Mass Index (kg/m²)", min_value=0.0, value=0.0, step=0.1)
-HYPOSOM = st.number_input("Insomnia/Hyposomnia (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-B12DEF_PREFINAL = st.number_input("Vitamin B12 Deficiency (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
+    # Creating a dictionary from user input
+    data = {
+        "Spinal Arthritis": spinal_arthritis,
+        "History of Stroke": history_of_stroke,
+        "Age": age,
+        "Other Parkinson's Disease Symptoms": other_parkinsons_symptoms,
+        "Height": height,
+        "Sleep Apnea Diagnosis": sleep_apnea_diagnosis,
+        "Heart Rate": heart_rate,
+        "Seizure Episodes": seizure_episodes,
+        "Psychiatric Disorders": psychiatric_disorders,
+        "Cigarettes Smoked Per Day": cigarettes_smoked,
+        "Arthritis Diagnosis": arthritis_diagnosis,
+        "Depression in Last 2 Years": depression_last_2_years,
+        "Diastolic Blood Pressure": diastolic_blood_pressure,
+        "REM Sleep Behavior Disorder": rem_sleep_behavior_disorder,
+        "Other Cardiovascular Conditions": cardiovascular_conditions,
+        "Diabetes Diagnosis": diabetes_diagnosis,
+        "Body Mass Index": bmi,
+        "Insomnia/Hyposomnia": insomnia_hyposomnia,
+        "Vitamin B12 Deficiency": vitamin_b12_deficiency
+    }
 
-# Collect inputs into a list (19 features here)
-input_data = [
-    ARTSPIN, CBSTROKE, NACCAGE, PDOTHR, HEIGHT, SLEEPAP, HRATE, SEIZURES, PSYCDIS,
-    PACKSPER, ARTH, DEP2YRS, BPDIAS, REMDIS, CVOTHR, DIABETES, NACCBMI, HYPOSOM, B12DEF_PREFINAL
-]
+    # Convert the data dictionary to DataFrame
+    return pd.DataFrame([data])
 
-# Prediction button
+# 2. Load the pre-trained model
+model = joblib.load('/path/to/your/model.pkl')  # Change this path accordingly
+
+# 3. Get the data from the user
+user_data = get_input()
+
+# 4. Make predictions using the model
 if st.button("Predict"):
-    input_array = np.array(input_data).reshape(1, -1)  # Ensure correct shape (1 row, 19 features)
-    
-    # Debugging: Display the input array
-    st.write(f"Input data shape: {input_array.shape}")
-    st.write(f"Input data: {input_array}")
+    prediction = model.predict(user_data)
+    st.write("Prediction:", prediction)
 
-    # Prediction using the loaded model
-    try:
-        # Use predict_proba to get the probability for class 1 (Alzheimer's risk)
-        probability = model.predict_proba(input_array)[0][1]  # Probability of class 1
+    # 5. SHAP Explanation
+    # Create a SHAP explainer using the model
+    explainer = shap.TreeExplainer(model)  # Use the appropriate explainer (e.g., TreeExplainer for tree-based models)
 
-        # Format probability as percentage
-        prob_percent = round(probability * 100, 2)
+    # Calculate SHAP values for the user input
+    shap_values = explainer.shap_values(user_data)
 
-        # Display the result based on the prediction
-        st.success(f"Estimated risk of developing Alzheimer's: {prob_percent}%")
-
-        # SHAP values visualization
-        explainer = shap.TreeExplainer(model)  # Create SHAP explainer
-        shap_values = explainer.shap_values(input_array)  # Calculate SHAP values
-
-        # Display SHAP summary plot
-        st.subheader("Feature Contributions (SHAP Values)")
-        shap.summary_plot(shap_values[1], input_array, feature_names=[
-            "Spinal Arthritis", "History of Stroke", "Age", "Other Parkinson's Disease Symptoms", "Height", 
-            "Sleep Apnea Diagnosis", "Heart Rate", "Seizure Episodes", "Psychiatric Disorders", "Cigarettes Smoked Per Day", 
-            "Arthritis Diagnosis", "Depression in Last 2 Years", "Diastolic Blood Pressure", "REM Sleep Behavior Disorder", 
-            "Other Cardiovascular Conditions", "Diabetes Diagnosis", "Body Mass Index", "Insomnia/Hyposomnia", 
-            "Vitamin B12 Deficiency"
-        ])
-        
-    except Exception as e:
-        st.error(f"Error in prediction: {str(e)}")
+    # Visualize SHAP values
+    st.subheader("SHAP Summary Plot")
+    shap.initjs()  # This initializes the SHAP visualization tools
+    shap.summary_plot(shap_values, user_data)
