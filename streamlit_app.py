@@ -1,45 +1,35 @@
 import streamlit as st
-import pickle
 import numpy as np
+import pickle
 
-# Load the model
-with open('lightgbm_model.pkl', 'rb') as file:
-    model = pickle.load(file)
+# Load the model (skip loading scaler)
+with open('model.pkl', 'rb') as f:
+    model = pickle.load(f)
 
-# Load the scaler
-with open('scaler.pkl', 'rb') as file:
-    scaler = pickle.load(file)
+# Title
+st.title("Risk Factors to Predict Alzheimer's Disease")
 
-st.set_page_config(page_title="Alzheimer's Risk Prediction", page_icon="🧠")
-st.title("Alzheimer's Risk Prediction")
+# Define your inputs
+st.header("Patient Information")
 
-st.write("Enter medical and lifestyle details to estimate the risk of Alzheimer's.")
+# Example: 9 features (customize as needed)
+NACCAGE = st.number_input("Age", min_value=0, max_value=120, value=60)
+BPDIAS = st.number_input("Diastolic BP", min_value=0, max_value=200, value=80)
+BPSYS = st.number_input("Systolic BP", min_value=0, max_value=300, value=120)
+WEIGHT = st.number_input("Weight (kg)", min_value=0, max_value=300, value=70)
+HRATE = st.number_input("Heart Rate", min_value=0, max_value=200, value=70)
+PACKSPER = st.number_input("Packs of cigarettes per day", min_value=0, max_value=100, value=0)
+DIABETES = st.selectbox("Diabetes", options=[0, 1])
+CBSTROKE = st.selectbox("History of Stroke", options=[0, 1])
+SLEEPAP = st.selectbox("Sleep Apnea", options=[0, 1])
 
-# List of input fields
-fields = [
-    'NACCAGE', 'ARTSPIN', 'CBSTROKE', 'PDOTHR', 'SLEEPAP', 'SEIZURES', 'ARTH', 'PSYCDIS', 'HRATE',
-    'REMDIS', 'PACKSPER', 'BPDIAS', 'WEIGHT', 'DEP2YRS', 'DIABETES', 'DEPOTHR', 'B12DEF_PREFINAL',
-    'CVOTHR', 'ARTLOEX', 'HYPOSOM', 'NACCAMD', 'CBTIA', 'BPSYS', 'TOBAC100'
-]
+# Collect into array
+input_data = [NACCAGE, BPDIAS, BPSYS, WEIGHT, HRATE, PACKSPER, DIABETES, CBSTROKE, SLEEPAP]
 
-# Initialize input storage
-input_data = []
-
-# Create form
-with st.form("prediction_form"):
-    for field in fields:
-        if field in ['HRATE', 'WEIGHT']:
-            value = st.number_input(f"{field}:", step=0.01, format="%.2f")
-        else:
-            value = st.number_input(f"{field}:", step=1)
-        input_data.append(value)
-
-    submit = st.form_submit_button("Predict")
-
-# Prediction logic
-if submit:
+# Predict button
+if st.button("Predict"):
     input_array = np.array(input_data).reshape(1, -1)
-    scaled_input = scaler.transform(input_array)
-    prediction = model.predict(scaled_input)
-    result = "Risk of developing Alzheimer's" if prediction[0] == 1 else "No risk of developing Alzheimer's"
+    prediction = model.predict(input_array)
+    
+    result = "Risk of developing Alzheimer's" if prediction[0] == 1 else "No significant risk"
     st.success(f"Prediction: {result}")
