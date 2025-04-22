@@ -77,8 +77,11 @@ if st.button("Predict"):
             "Vitamin B12 Deficiency"
         ])
         
-        # Display SHAP values numerically in a table
-        st.subheader("Numerical SHAP Values for Class 1 (Alzheimer's Risk)")
+        # Compute the mean absolute SHAP values for each feature
+        shap_df["Mean Absolute SHAP"] = shap_df.abs().mean(axis=0)
+
+        # Display SHAP values numerically in a table with mean absolute SHAP values
+        st.subheader("Numerical SHAP Values for Class 1 (Alzheimer's Risk) with Mean Absolute SHAP Values")
         st.write(shap_df)  # Display SHAP values as a table
         
     except Exception as e:
