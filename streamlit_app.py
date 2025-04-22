@@ -1,11 +1,9 @@
 import streamlit as st
 import numpy as np
 import pickle
-import shap
-import matplotlib.pyplot as plt
 
 # Load your pre-trained model
-model_path = 'model.pkl'  # Replace with the actual model file path
+model_path = 'lightgbm_model_22-04-2025.pkl'  # Replace with the actual model file path
 with open(model_path, 'rb') as file:
     model = pickle.load(file)
 
@@ -14,6 +12,7 @@ st.title("Alzheimer's Risk Prediction")
 st.write("Enter medical and lifestyle details to estimate the risk of Alzheimer's.")
 
 # Feature Inputs (matching new features provided in the HTML form)
+
 ARTSPIN = st.number_input("Spinal Arthritis (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
 CBSTROKE = st.number_input("History of Stroke (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
 NACCAGE = st.number_input("Age (in years)", min_value=0, value=0)
@@ -43,6 +42,10 @@ input_data = [
 # Prediction button
 if st.button("Predict"):
     input_array = np.array(input_data).reshape(1, -1)  # Ensure correct shape (1 row, 19 features)
+    
+    # Debugging: Display the input array
+    st.write(f"Input data shape: {input_array.shape}")
+    st.write(f"Input data: {input_array}")
 
     # Prediction using the loaded model
     try:
@@ -54,20 +57,6 @@ if st.button("Predict"):
 
         # Display the result based on the prediction
         st.success(f"Estimated risk of developing Alzheimer's: {prob_percent}%")
-
-        # SHAP values visualization
-        explainer = shap.TreeExplainer(model)  # Create SHAP explainer
-        shap_values = explainer.shap_values(input_array)  # Calculate SHAP values
-
-        # Display SHAP summary plot
-        st.subheader("Feature Contributions (SHAP Values)")
-        shap.summary_plot(shap_values[1], input_array, feature_names=[
-            "Spinal Arthritis", "History of Stroke", "Age", "Other Parkinson's Disease Symptoms", "Height", 
-            "Sleep Apnea Diagnosis", "Heart Rate", "Seizure Episodes", "Psychiatric Disorders", "Cigarettes Smoked Per Day", 
-            "Arthritis Diagnosis", "Depression in Last 2 Years", "Diastolic Blood Pressure", "REM Sleep Behavior Disorder", 
-            "Other Cardiovascular Conditions", "Diabetes Diagnosis", "Body Mass Index", "Insomnia/Hyposomnia", 
-            "Vitamin B12 Deficiency"
-        ])
-        
+    
     except Exception as e:
         st.error(f"Error in prediction: {str(e)}")
