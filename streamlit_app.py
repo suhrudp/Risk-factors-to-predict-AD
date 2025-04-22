@@ -11,42 +11,37 @@ with open(model_path, 'rb') as file:
 st.title("Alzheimer's Risk Prediction")
 st.write("Enter medical and lifestyle details to estimate the risk of Alzheimer's.")
 
-# Feature Inputs (same as before)
-NACCAGE = st.number_input("NACCAGE (Age)", min_value=0, value=0)
-ARTSPIN = st.number_input("ARTSPIN (Spin Rate)", min_value=0, value=0)
-CBSTROKE = st.number_input("CBSTROKE (History of Stroke)", min_value=0, value=0)
-PDOTHR = st.number_input("PDOTHR (Other Disorders)", min_value=0, value=0)
-SLEEPAP = st.number_input("SLEEPAP (Sleep Apnea)", min_value=0, value=0)
-SEIZURES = st.number_input("SEIZURES (History of Seizures)", min_value=0, value=0)
-ARTH = st.number_input("ARTH (Arthritis)", min_value=0, value=0)
-PSYCDIS = st.number_input("PSYCDIS (Psychiatric Disorder)", min_value=0, value=0)
-HRATE = st.number_input("HRATE (Heart Rate)", value=0.00, format="%.2f")
-REMDIS = st.number_input("REMDIS (Recent Disorders)", min_value=0, value=0)
-PACKSPER = st.number_input("PACKSPER (Pack Years of Smoking)", min_value=0, value=0)
-BPDIAS = st.number_input("BPDIAS (Diastolic Blood Pressure)", min_value=0, value=0)
-WEIGHT = st.number_input("WEIGHT (Weight in kg)", value=0.00, format="%.2f")
-DEP2YRS = st.number_input("DEP2YRS (Depression Duration in years)", min_value=0, value=0)
-DIABETES = st.number_input("DIABETES (Diabetes)", min_value=0, value=0)
-DEPOTHR = st.number_input("DEPOTHR (Other Depression)", min_value=0, value=0)
-B12DEF_PREFINAL = st.number_input("B12DEF_PREFINAL (B12 Deficiency Final)", min_value=0, value=0)
-CVOTHR = st.number_input("CVOTHR (Cardiovascular Disease)", min_value=0, value=0)
-ARTLOEX = st.number_input("ARTLOEX (Other ART History)", min_value=0, value=0)
-HYPOSOM = st.number_input("HYPOSOM (Hypo-somnolence)", min_value=0, value=0)
-NACCAMD = st.number_input("NACCAMD (NACC Alzheimer's Disease)", min_value=0, value=0)
-CBTIA = st.number_input("CBTIA (Cognitive Decline)", min_value=0, value=0)
-BPSYS = st.number_input("BPSYS (Systolic Blood Pressure)", min_value=0, value=0)
-TOBAC100 = st.number_input("TOBAC100 (Tobacco Use, 100+ Cigarettes)", min_value=0, value=0)
+# Feature Inputs (matching new features provided in the HTML form)
 
-# Collect inputs into a list
+ARTSPIN = st.number_input("Spinal Arthritis (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
+CBSTROKE = st.number_input("History of Stroke (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
+NACCAGE = st.number_input("Age (in years)", min_value=0, value=0)
+PDOTHR = st.number_input("Other Parkinson's Disease Symptoms (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
+HEIGHT = st.number_input("Height (cm)", min_value=0.0, value=0.0, step=0.1)
+SLEEPAP = st.number_input("Sleep Apnea Diagnosis (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
+HRATE = st.number_input("Heart Rate (BPM)", value=0.00, format="%.2f")
+SEIZURES = st.number_input("Seizure Episodes (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
+PSYCDIS = st.number_input("Psychiatric Disorders (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
+PACKSPER = st.number_input("Cigarettes Smoked Per Day", min_value=0, value=0)
+ARTH = st.number_input("Arthritis Diagnosis (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
+DEP2YRS = st.number_input("Depression in Last 2 Years (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
+BPDIAS = st.number_input("Diastolic Blood Pressure (mmHg)", min_value=0, value=0)
+REMDIS = st.number_input("REM Sleep Behavior Disorder (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
+CVOTHR = st.number_input("Other Cardiovascular Conditions (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
+DIABETES = st.number_input("Diabetes Diagnosis (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
+NACCBMI = st.number_input("Body Mass Index (kg/m²)", min_value=0.0, value=0.0, step=0.1)
+HYPOSOM = st.number_input("Insomnia/Hyposomnia (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
+B12DEF_PREFINAL = st.number_input("Vitamin B12 Deficiency (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
+
+# Collect inputs into a list (19 features here)
 input_data = [
-    NACCAGE, ARTSPIN, CBSTROKE, PDOTHR, SLEEPAP, SEIZURES, ARTH, PSYCDIS,
-    HRATE, REMDIS, PACKSPER, BPDIAS, WEIGHT, DEP2YRS, DIABETES, DEPOTHR,
-    B12DEF_PREFINAL, CVOTHR, ARTLOEX, HYPOSOM, NACCAMD, CBTIA, BPSYS, TOBAC100
+    ARTSPIN, CBSTROKE, NACCAGE, PDOTHR, HEIGHT, SLEEPAP, HRATE, SEIZURES, PSYCDIS,
+    PACKSPER, ARTH, DEP2YRS, BPDIAS, REMDIS, CVOTHR, DIABETES, NACCBMI, HYPOSOM, B12DEF_PREFINAL
 ]
 
 # Prediction button
 if st.button("Predict"):
-    input_array = np.array(input_data).reshape(1, -1)  # Ensure correct shape (1 row, N features)
+    input_array = np.array(input_data).reshape(1, -1)  # Ensure correct shape (1 row, 19 features)
     
     # Debugging: Display the input array
     st.write(f"Input data shape: {input_array.shape}")
