@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import joblib
 import shap
+import matplotlib.pyplot as plt
 
 # 1. Function to manually input data for each feature
 def get_input():
@@ -55,7 +56,7 @@ def get_input():
     return pd.DataFrame([data])
 
 # 2. Load the pre-trained model
-model = joblib.load('model.pkl')  # Change this path accordingly
+model = joblib.load('/path/to/your/model.pkl')  # Change this path accordingly
 
 # 3. Get the data from the user
 user_data = get_input()
@@ -85,7 +86,8 @@ if st.button("Predict"):
     # Calculate SHAP values for the user input
     shap_values = explainer.shap_values(user_data)
 
-    # Visualize SHAP values
+    # Visualize SHAP values using Matplotlib (non-JS based)
     st.subheader("SHAP Summary Plot")
-    shap.initjs()  # This initializes the SHAP visualization tools
-    shap.summary_plot(shap_values, user_data)
+    shap.summary_plot(shap_values, user_data, plot_type="bar")
+    plt.show()
+    st.pyplot(plt)  # Display the plot in Streamlit
