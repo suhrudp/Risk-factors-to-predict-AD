@@ -10,8 +10,8 @@ with open(model_path, 'rb') as file:
     model = pickle.load(file)
 
 # Streamlit app UI
-st.title("Alzheimer's Risk Prediction")
-st.write("Enter medical and lifestyle details to estimate the risk of Alzheimer's.")
+st.title("Alzheimer's Probability Prediction")
+st.write("Enter medical and lifestyle details to estimate the probability of Alzheimer's.")
 
 # Feature Inputs (matching new features provided in the HTML form)
 ARTSPIN = st.number_input("Spinal Arthritis (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
@@ -57,7 +57,7 @@ if st.button("Predict"):
         prob_percent = round(probability * 100, 2)
 
         # Display the result based on the prediction
-        st.success(f"Estimated risk of developing Alzheimer's: {prob_percent}%")
+        st.success(f"Estimated probability of developing Alzheimer's: {prob_percent}%")
 
         # SHAP values visualization
         explainer = shap.TreeExplainer(model)  # Create SHAP explainer
