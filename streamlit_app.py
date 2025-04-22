@@ -3,13 +3,15 @@ import numpy as np
 import pickle
 
 # Load your pre-trained model
-model = pickle.load(open("model.pkl", "rb"))  # Replace with your actual model filename
+model_path = 'lightgbm_model_22-04-2025.pkl'  # Replace with the actual model file path
+with open(model_path, 'rb') as file:
+    model = pickle.load(file)
 
-# Streamlit app
+# Streamlit app UI
 st.title("Alzheimer's Risk Prediction")
 st.write("Enter medical and lifestyle details to estimate the risk of Alzheimer's.")
 
-# Feature Inputs
+# Feature Inputs (same as before)
 NACCAGE = st.number_input("NACCAGE (Age)", min_value=0, value=0)
 ARTSPIN = st.number_input("ARTSPIN (Spin Rate)", min_value=0, value=0)
 CBSTROKE = st.number_input("CBSTROKE (History of Stroke)", min_value=0, value=0)
@@ -52,11 +54,14 @@ if st.button("Predict"):
 
     # Prediction using the loaded model
     try:
-        prediction = model.predict(input_array)
-        
+        # Use predict_proba to get the probability for class 1 (Alzheimer's risk)
+        probability = model.predict_proba(input_array)[0][1]  # Probability of class 1
+
+        # Format probability as percentage
+        prob_percent = round(probability * 100, 2)
+
         # Display the result based on the prediction
-        result = "Risk of developing Alzheimer's" if prediction[0] == 1 else "No significant risk detected"
-        st.success(f"Prediction: {result}")
+        st.success(f"Estimated risk of developing Alzheimer's: {prob_percent}%")
     
     except Exception as e:
         st.error(f"Error in prediction: {str(e)}")
