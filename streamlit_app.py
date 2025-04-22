@@ -55,7 +55,7 @@ def get_input():
     return pd.DataFrame([data])
 
 # 2. Load the pre-trained model
-model = joblib.load('/path/to/your/model.pkl')  # Change this path accordingly
+model = joblib.load('model.pkl')  # Change this path accordingly
 
 # 3. Get the data from the user
 user_data = get_input()
