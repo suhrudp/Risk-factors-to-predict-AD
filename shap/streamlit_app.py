@@ -1,88 +1,53 @@
-import streamlit as st
 import numpy as np
-import pickle
-import shap
 import pandas as pd
+import shap
 
-# Load your pre-trained model
-model_path = 'model.pkl'  # Replace with the actual model file path
-with open(model_path, 'rb') as file:
-    model = pickle.load(file)
+# Generate synthetic data similar to the input features
+def generate_synthetic_data():
+    # Create random synthetic data for each feature (similar to input range)
+    synthetic_data = {
+        "Spinal Arthritis": np.random.randint(0, 2),
+        "History of Stroke": np.random.randint(0, 2),
+        "Age": np.random.randint(40, 80),  # Age range assumption
+        "Other Parkinson's Disease Symptoms": np.random.randint(0, 2),
+        "Height": np.random.uniform(150, 190),  # Assuming height in cm
+        "Sleep Apnea Diagnosis": np.random.randint(0, 2),
+        "Heart Rate": np.random.uniform(60, 100),  # Normal heart rate in BPM
+        "Seizure Episodes": np.random.randint(0, 2),
+        "Psychiatric Disorders": np.random.randint(0, 2),
+        "Cigarettes Smoked Per Day": np.random.randint(0, 30),  # Random pack count
+        "Arthritis Diagnosis": np.random.randint(0, 2),
+        "Depression in Last 2 Years": np.random.randint(0, 2),
+        "Diastolic Blood Pressure": np.random.randint(70, 90),  # Normal diastolic pressure range
+        "REM Sleep Behavior Disorder": np.random.randint(0, 2),
+        "Other Cardiovascular Conditions": np.random.randint(0, 2),
+        "Diabetes Diagnosis": np.random.randint(0, 2),
+        "Body Mass Index": np.random.uniform(18.5, 35.0),  # BMI range assumption
+        "Insomnia/Hyposomnia": np.random.randint(0, 2),
+        "Vitamin B12 Deficiency": np.random.randint(0, 2),
+    }
+    return pd.DataFrame([synthetic_data])
 
-# Streamlit app UI
-st.title("Alzheimer's Probability Prediction")
-st.write("Enter medical and lifestyle details to estimate the probability of Alzheimer's.")
+# Generating synthetic data
+synthetic_data_df = generate_synthetic_data()
 
-# Feature Inputs (matching new features provided in the HTML form)
-ARTSPIN = st.number_input("Spinal Arthritis (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-CBSTROKE = st.number_input("History of Stroke (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-NACCAGE = st.number_input("Age (in years)", min_value=0, value=0)
-PDOTHR = st.number_input("Other Parkinson's Disease Symptoms (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-HEIGHT = st.number_input("Height (cm)", min_value=0.0, value=0.0, step=0.1)
-SLEEPAP = st.number_input("Sleep Apnea Diagnosis (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-HRATE = st.number_input("Heart Rate (BPM)", value=0.00, format="%.2f")
-SEIZURES = st.number_input("Seizure Episodes (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-PSYCDIS = st.number_input("Psychiatric Disorders (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-PACKSPER = st.number_input("Cigarettes Smoked Per Day", min_value=0, value=0)
-ARTH = st.number_input("Arthritis Diagnosis (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-DEP2YRS = st.number_input("Depression in Last 2 Years (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-BPDIAS = st.number_input("Diastolic Blood Pressure (mmHg)", min_value=0, value=0)
-REMDIS = st.number_input("REM Sleep Behavior Disorder (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-CVOTHR = st.number_input("Other Cardiovascular Conditions (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-DIABETES = st.number_input("Diabetes Diagnosis (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-NACCBMI = st.number_input("Body Mass Index (kg/m²)", min_value=0.0, value=0.0, step=0.1)
-HYPOSOM = st.number_input("Insomnia/Hyposomnia (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
-B12DEF_PREFINAL = st.number_input("Vitamin B12 Deficiency (0: No, 1: Yes)", min_value=0, max_value=1, value=0)
+# Assuming you have already loaded your model
+# Generate SHAP values with synthetic data
+explainer = shap.TreeExplainer(model)
+shap_values = explainer.shap_values(synthetic_data_df)
 
-# Collect inputs into a list (19 features here)
-input_data = [
-    ARTSPIN, CBSTROKE, NACCAGE, PDOTHR, HEIGHT, SLEEPAP, HRATE, SEIZURES, PSYCDIS,
-    PACKSPER, ARTH, DEP2YRS, BPDIAS, REMDIS, CVOTHR, DIABETES, NACCBMI, HYPOSOM, B12DEF_PREFINAL
-]
+# Create a SHAP DataFrame
+shap_df = pd.DataFrame(shap_values[1], columns=[
+    "Spinal Arthritis", "History of Stroke", "Age", "Other Parkinson's Disease Symptoms", "Height", 
+    "Sleep Apnea Diagnosis", "Heart Rate", "Seizure Episodes", "Psychiatric Disorders", "Cigarettes Smoked Per Day", 
+    "Arthritis Diagnosis", "Depression in Last 2 Years", "Diastolic Blood Pressure", "REM Sleep Behavior Disorder", 
+    "Other Cardiovascular Conditions", "Diabetes Diagnosis", "Body Mass Index", "Insomnia/Hyposomnia", 
+    "Vitamin B12 Deficiency"
+])
 
-# Prediction button
-if st.button("Predict"):
-    input_array = np.array(input_data).reshape(1, -1)  # Ensure correct shape (1 row, 19 features)
-    
-    # Debugging: Display the input array
-    st.write(f"Input data shape: {input_array.shape}")
-    st.write(f"Input data: {input_array}")
+# Calculate mean absolute SHAP values for each feature and add it to the dataframe
+shap_df["Mean Absolute SHAP"] = shap_df.abs().mean(axis=0)
 
-    # Prediction using the loaded model
-    try:
-        # Use predict_proba to get the probability for class 1 (Alzheimer's risk)
-        probability = model.predict_proba(input_array)[0][1]  # Probability of class 1
-
-        # Format probability as percentage
-        prob_percent = round(probability * 100, 2)
-
-        # Display the result based on the prediction
-        st.success(f"Estimated probability of developing Alzheimer's: {prob_percent}%")
-
-        # SHAP values visualization
-        explainer = shap.TreeExplainer(model)  # Create SHAP explainer
-        shap_values = explainer.shap_values(input_array)  # Calculate SHAP values
-        
-        # Check the structure of shap_values
-        st.write("SHAP Values Structure")
-        st.write(f"shap_values[0] (Class 0): {shap_values[0]}")
-        st.write(f"shap_values[1] (Class 1): {shap_values[1]}")
-
-        # Extract SHAP values for class 1 (Alzheimer's risk)
-        shap_df = pd.DataFrame(shap_values[1], columns=[
-            "Spinal Arthritis", "History of Stroke", "Age", "Other Parkinson's Disease Symptoms", "Height", 
-            "Sleep Apnea Diagnosis", "Heart Rate", "Seizure Episodes", "Psychiatric Disorders", "Cigarettes Smoked Per Day", 
-            "Arthritis Diagnosis", "Depression in Last 2 Years", "Diastolic Blood Pressure", "REM Sleep Behavior Disorder", 
-            "Other Cardiovascular Conditions", "Diabetes Diagnosis", "Body Mass Index", "Insomnia/Hyposomnia", 
-            "Vitamin B12 Deficiency"
-        ])
-        
-        # Calculate mean absolute SHAP values for each feature and add it to the dataframe
-        shap_df["Mean Absolute SHAP"] = shap_df.abs().mean(axis=0)
-
-        # Display SHAP values numerically in a table with mean absolute SHAP values
-        st.subheader("Numerical SHAP Values for Class 1 (Alzheimer's Risk) with Mean Absolute SHAP Values")
-        st.write(shap_df)  # Display SHAP values as a table
-        
-    except Exception as e:
-        st.error(f"Error in prediction: {str(e)}")
+# Display SHAP values
+st.subheader("Numerical SHAP Values for Class 1 (Alzheimer's Risk) with Mean Absolute SHAP Values")
+st.write(shap_df)
