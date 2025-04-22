@@ -63,8 +63,21 @@ user_data = get_input()
 # 4. Make predictions using the model
 if st.button("Predict"):
     prediction = model.predict(user_data)
-    st.write("Prediction:", prediction)
-
+    prediction_proba = model.predict_proba(user_data)  # Get probabilities
+    
+    # Map prediction values to readable labels
+    if prediction == 0:
+        prediction_label = "Healthy Control"
+    else:
+        prediction_label = "Alzheimer's Disease (AD)"
+    
+    # Display prediction
+    st.write("Prediction: ", prediction_label)
+    
+    # Display the probabilities for each class (0 = Healthy, 1 = AD)
+    st.write(f"Probability of Healthy Control (0): {prediction_proba[0][0] * 100:.2f}%")
+    st.write(f"Probability of Alzheimer's Disease (AD) (1): {prediction_proba[0][1] * 100:.2f}%")
+    
     # 5. SHAP Explanation
     # Create a SHAP explainer using the model
     explainer = shap.TreeExplainer(model)  # Use the appropriate explainer (e.g., TreeExplainer for tree-based models)
